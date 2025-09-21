@@ -1,0 +1,12 @@
+streamlit
+pandas
+requests
+pypdf
+faiss-cpu
+sentence-transformers
+transformers
+langchain-core
+langchain-community
+langchain-groq
+langchain-huggingface
+langchain-text-splitters
