@@ -188,7 +188,7 @@ def initialize_knowledge_base():
 initialize_knowledge_base()
 
 # --- CHAT DIALOG FUNCTION (Keep as is) ---
-@st.dialog("AI Marketing Advisor")
+@st.dialog("PragyanAI Marketing Advisor")
 def run_chat_dialog():
     for message in st.session_state.messages:
         with st.chat_message(message["role"]): st.markdown(message["content"])
@@ -225,7 +225,7 @@ def run_chat_dialog():
 # Header
 col1, col2, col3 = st.columns([2, 5, 2])
 with col2:
-    st.image("PragyanAI_Transperent_github.png", use_container_width=True)
+    st.image("PragyanAI_Transperent.png", use_container_width=True)
 
 # Hero Section
 st.markdown("<br>", unsafe_allow_html=True)
