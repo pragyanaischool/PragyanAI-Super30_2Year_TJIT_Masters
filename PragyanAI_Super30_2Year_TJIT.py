@@ -97,7 +97,7 @@ def render_sidebar():
             "Go to",
             [
                 "Home", "Program Details", "Curriculum", "Mentor", "Videos", "Investment", 
-                "Our Advantage", "About PragyanAI", "AI Assistant", "FAQ"
+                "Placement Assurance", "Our Advantage", "About PragyanAI", "AI Assistant & FAQ"
             ],
             label_visibility="collapsed"
         )
@@ -323,6 +323,42 @@ def render_investment():
     | **Skill Coverage** | **Full stack AI, GenAI, AgenticAI** | Core ML/DS              | ML basics, coding prep      |
     """)
 
+def render_placement_assurance():
+    """Renders the dedicated page for placement assurance."""
+    st.markdown("## <span class='gradient-text'>Your Success is Our Mission</span>", unsafe_allow_html=True)
+    st.write("We provide comprehensive placement support to ensure every eligible student lands a high-value job. Our commitment is backed by a structured process and aggressive, industry-aligned training.")
+
+    st.markdown("---")
+
+    st.subheader("Mandatory Eligibility Criteria for Placement")
+    st.write("To be eligible for our placement drive, students must fulfill the following conditions:")
+    
+    with st.container(border=True):
+        st.markdown("""
+        - **Attendance:** A minimum of 85% attendance is mandatory in all sessions (online and offline).
+        - **Academic Standing:** Students must have no active backlogs.
+        - **Coursework Completion:** All assignments, code challenges, and projects must be submitted on time.
+        - **Demonstrated Skills:** Successful completion and demonstration of all major projects.
+        - **Research & Innovation:** Completion of 2 research papers and participation in at least 2 hackathons.
+        - **Real-World Experience:** Mandatory completion of 2 live, real-world projects.
+        """)
+    
+    st.markdown("---")
+    
+    st.subheader("Our Placement Guarantee & Support")
+    
+    cols = st.columns(2)
+    with cols[0]:
+        with st.container(border=True):
+            st.markdown("#### **Unwavering Support**")
+            st.write("Our support doesn't end until every eligible student is placed. We leverage our network of over **2000+ company connections** to create opportunities.")
+    with cols[1]:
+        with st.container(border=True):
+             st.markdown("#### **Placement Policy**")
+             st.write("Any job offer a student receives after enrolling in the program, whether through our drives or their own efforts, will be considered a placement facilitated by the program.")
+    
+    st.success("Our aggressive, hands-on curriculum is the reason our placement happens and why our graduates are in high demand.")
+
 def render_advantage():
     """Renders the 'Why Us' and 'Trainer' sections."""
     st.markdown("## Your <span class='gradient-text'>Unfair Advantage</span> in the AI Era", unsafe_allow_html=True)
@@ -362,12 +398,13 @@ def render_about_pragyanai():
             - Jury at Startup India Hackathons
             """)
 
-def render_ai_assistant():
-    """Renders the RAG-based AI Assistant."""
-    st.markdown("## AI <span class='gradient-text'>Student Assistant (RAG Enabled)</span>", unsafe_allow_html=True)
-    st.write("Ask questions about the program. Our AI assistant will find answers directly from the official brochure using a RAG model.")
+def render_ai_assistant_and_faq():
+    """Renders the RAG-based AI Assistant and the FAQ section."""
+    st.markdown("## AI <span class='gradient-text'>Assistant & FAQ</span>", unsafe_allow_html=True)
+    st.write("Have a question? Ask our AI assistant, which uses the official brochure for answers, or check our frequently asked questions below.")
 
-    # Check for API Key
+    # --- AI Assistant Part ---
+    st.markdown("### AI Student Assistant (RAG Enabled)")
     try:
         groq_api_key = st.secrets["GROQ_API_KEY"]
     except KeyError:
@@ -406,21 +443,22 @@ def render_ai_assistant():
                     st.session_state.rag_messages.append({"role": "assistant", "content": answer})
                 except Exception as e:
                     st.error(f"An error occurred: {e}")
+    
+    st.markdown("<br><br><hr><br>", unsafe_allow_html=True)
 
-def render_faq():
-    """Renders the FAQ section."""
-    st.markdown("## Frequently Asked <span class='gradient-text'>Questions</span>", unsafe_allow_html=True)
-
+    # --- FAQ Part ---
+    st.markdown("### Frequently Asked Questions")
     faq_data = {
         "What is the total duration of the program?": "The program is a 2-year comprehensive Master's Certificate Program with over 1200+ hours of learning, spread across semesters 5 through 8 of your engineering degree.",
         "How does the 'Impact Assured' guarantee work?": "We guarantee that graduates will secure a job with a CTC that is at least ₹50,000 to ₹1 Lakh higher than their college peers. If this goal is not met, we will refund 50% of the program fee.",
         "Is this program suitable for beginners?": "Yes. The curriculum is designed to take you from foundational concepts like Python programming in Semester 5 to advanced topics like Agentic AI in Semester 8. It's a structured journey suitable for dedicated learners.",
-        "What kind of placement support is provided?": "We provide extensive career support including mock interviews (technical, HR, GD), profile building (Resume, LinkedIn, GitHub), and complementary training on DSA, core CSE concepts, aptitude, and soft skills. The program culminates in a placement drive."
+        "What are the mandatory conditions for placement support?": "Students must maintain 85% attendance, have no backlogs, and complete all mandatory coursework, including projects, research papers, and hackathons, to be eligible for the placement drive."
     }
 
     for question, answer in faq_data.items():
         with st.expander(question):
             st.write(answer)
+
 
 # --- Main App Execution ---
 def main():
@@ -441,6 +479,8 @@ def main():
         render_videos()
     elif selected_page == "Investment":
         render_investment()
+    elif selected_page == "Placement Assurance":
+        render_placement_assurance()
     elif selected_page == "Our Advantage":
         render_advantage()
         st.markdown("---")
@@ -464,11 +504,8 @@ def main():
             """)
     elif selected_page == "About PragyanAI":
         render_about_pragyanai()
-    elif selected_page == "AI Assistant":
-        render_ai_assistant()
-    elif selected_page == "FAQ":
-        render_faq()
+    elif selected_page == "AI Assistant & FAQ":
+        render_ai_assistant_and_faq()
 
 if __name__ == "__main__":
     main()
-    
