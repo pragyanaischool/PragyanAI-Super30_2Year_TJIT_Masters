@@ -291,7 +291,7 @@ def render_videos():
     st.video("https://youtu.be/wp_hejdJzZk")
 
     st.subheader("Why You Should Learn AI in Today's World")
-    st.video("https://www.youtube.com/watch?v=kflTwjV4I3g") 
+    st.video("https://youtu.be/JXQhXT_ic9s") 
 
     st.subheader("Sample Student Project Showcase")
     st.video("https://youtu.be/tiY7-EP3GKs")
