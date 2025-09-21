@@ -12,7 +12,7 @@ from langchain_groq import ChatGroq
 
 # --- Page Configuration ---
 st.set_page_config(
-    page_title="MCP in AI & Data Science | TJIT + PragyanAI",
+    page_title="PragyanAI -MCP in Data Science,AI and GenAI | TJIT + PragyanAI",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -148,6 +148,13 @@ def render_sidebar():
 
 def render_hero():
     """Renders the main hero section."""
+    # Add the main image to the hero section
+    if os.path.exists("PragyanAI_Transperent.png"):
+        # Center the image
+        col1, col2, col3 = st.columns([1,2,1])
+        with col2:
+            st.image("PragyanAI_Transperent.png", use_column_width=True)
+
     st.markdown(
         """
         <div class="hero-section">
