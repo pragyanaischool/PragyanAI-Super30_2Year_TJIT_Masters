@@ -1,7 +1,7 @@
 import streamlit as st
 import base64
 import os
-from groq import Groq
+import gdown
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -12,7 +12,7 @@ from langchain_groq import ChatGroq
 
 # --- Page Configuration ---
 st.set_page_config(
-    page_title="PragyanAI - MCP in Data Science,AI & GenAI | TJIT + PragyanAI",
+    page_title="MCP in AI & Data Science | TJIT + PragyanAI",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -37,30 +37,32 @@ def get_pdf_as_base64(file_path):
 # --- RAG Pipeline Setup (Cached for performance) ---
 @st.cache_resource
 def setup_rag_pipeline(groq_api_key):
-    """Loads PDF, splits it, creates embeddings and a vector store, and sets up a RAG QA chain."""
-    # 1. Load PDF
-    pdf_path = "MCP Program - Grooms Tommorrow's AI Leaders - TJIT -2 Years.pdf"
-    if not os.path.exists(pdf_path):
-        st.error("Brochure PDF ('MCP Program - Grooms Tommorrow's AI Leaders - TJIT -2 Years.pdf') not found for RAG setup.")
-        return None
+    """Downloads PDF from Google Drive, loads it, creates embeddings, and sets up a RAG QA chain."""
+    # 1. Download PDF from Google Drive
+    output_pdf_path = "MCP_Program_Brochure_RAG.pdf"
+    file_id = "177VRFLhiyCC_xJ8idVBOhCPYcM6sz6un"
     
+    if not os.path.exists(output_pdf_path):
+        with st.spinner("Downloading program brochure for AI Assistant..."):
+            gdown.download(id=file_id, output=output_pdf_path, quiet=False)
+
+    # 2. Load PDF
     with st.spinner("Processing program brochure for AI Assistant..."):
-        loader = PyPDFLoader(file_path=pdf_path)
+        loader = PyPDFLoader(file_path=output_pdf_path)
         docs = loader.load()
 
-        # 2. Split Text into Chunks
+        # 3. Split Text into Chunks
         text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
         splits = text_splitter.split_documents(docs)
 
-        # 3. Create Embeddings using a local model
-        # Using a local model avoids API calls for embedding and is free
+        # 4. Create Embeddings using a local model
         embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-        # 4. Create Vector Store (FAISS)
+        # 5. Create Vector Store (FAISS)
         vectorstore = FAISS.from_documents(documents=splits, embedding=embeddings)
 
-        # 5. Setup LLM & Retrieval QA Chain
-        llm = ChatGroq(api_key=groq_api_key, model_name="llama-3.3-70b-versatile")
+        # 6. Setup LLM & Retrieval QA Chain
+        llm = ChatGroq(api_key=groq_api_key, model_name="llama3-70b-8192")
         
         qa_chain = RetrievalQA.from_chain_type(
             llm=llm,
@@ -94,7 +96,7 @@ def render_sidebar():
         page = st.radio(
             "Go to",
             [
-                "Home", "Program Details", "Curriculum", "Investment", 
+                "Home", "Program Details", "Curriculum", "Mentor", "Videos", "Investment", 
                 "Our Advantage", "About PragyanAI", "AI Assistant", "FAQ"
             ],
             label_visibility="collapsed"
@@ -106,8 +108,8 @@ def render_sidebar():
         
         # Expression of Interest Form
         st.link_button(
-            "Expression of Interest Form", 
-            "https://forms.gle/your-google-form-link", # Replace with your actual Google Form link
+            "Enroll / Express Interest", 
+            "https://forms.gle/cpdSwqy3fxd7EMgW9",
             use_container_width=True, type="primary"
         )
         
@@ -201,13 +203,22 @@ def render_program_details():
         st.write(description)
         st.markdown("<br>", unsafe_allow_html=True)
 
-
-def render_curriculum():
+def render_curriculum(pdf_b64):
     """Renders the curriculum section with tabs."""
     st.markdown("## An <span class='gradient-text'>Industry-Vetted</span> Curriculum", unsafe_allow_html=True)
     st.write("Explore the 8 key skills you'll master, packed with the most in-demand tools and libraries.")
 
     sem5, sem6, sem7, sem8 = st.tabs(["Semester 5", "Semester 6", "Semester 7", "Semester 8"])
+    
+    # Common download button logic
+    def download_button(pdf_data):
+        if pdf_data:
+            st.download_button(
+                label="Download Full Brochure",
+                data=base64.b64decode(pdf_data),
+                file_name="PragyanAI_MCP_Brochure.pdf",
+                mime="application/pdf"
+            )
 
     with sem5:
         st.subheader("SKILL 1: Python & Data Wrangling")
@@ -216,6 +227,7 @@ def render_curriculum():
         st.subheader("SKILL 2: Data Science Foundation")
         st.write("Statistics, probability, EDA, and data visualization.")
         st.caption("Tools: Matplotlib, Seaborn, Plotly, Statsmodels")
+        download_button(pdf_b64)
 
     with sem6:
         st.subheader("SKILL 3: BI / Data Analytics")
@@ -224,6 +236,7 @@ def render_curriculum():
         st.subheader("SKILL 4: Machine Learning")
         st.write("Supervised/unsupervised learning, model optimization and deployment.")
         st.caption("Tools: Scikit-learn, XGBoost, LightGBM, Streamlit")
+        download_button(pdf_b64)
 
     with sem7:
         st.subheader("SKILL 5: Deep Learning & CV")
@@ -232,6 +245,7 @@ def render_curriculum():
         st.subheader("SKILL 6: NLP & AI Bot")
         st.write("Text processing, embeddings, conversational AI, and multimodal bots.")
         st.caption("Tools: Hugging Face, Transformers, NLTK, spaCy")
+        download_button(pdf_b64)
 
     with sem8:
         st.subheader("SKILL 7: Generative AI")
@@ -240,6 +254,37 @@ def render_curriculum():
         st.subheader("SKILL 8: Agentic AI")
         st.write("Building single and multi-agent systems for autonomous tasks.")
         st.caption("Tools: CrewAI, AutoGPT, LangChain Agents, AutoGen")
+        download_button(pdf_b64)
+
+def render_mentor():
+    """Renders the dedicated page for the mentor."""
+    st.markdown("## Meet Your <span class='gradient-text'>Mentor</span>", unsafe_allow_html=True)
+    
+    cols = st.columns([1, 2])
+    with cols[0]:
+        st.image("https://placehold.co/200x200/1e293b/f97316?text=SA", caption="Sateesh Ambessange, Lead Trainer", use_column_width=True)
+    with cols[1]:
+        st.write("""
+        Learn from a veteran with **25+ years of industry, academic, and research experience**. 
+        He has developed commercial AI products, guided GenAI startups, mentored at hackathons, 
+        and helped shape AI curricula for top institutions like Wharton University.
+        
+        His "Live-to-Practice Pipeline" methodology ensures that theoretical knowledge is immediately applied, mirroring real-world industry expectations and preparing you for the challenges of the job market.
+        """)
+        st.link_button("View LinkedIn Profile", "https://www.linkedin.com/in/sateesh-ambesange-3020185/")
+    st.markdown("---")
+    st.write("The program is delivered by highly experienced faculty using a pedagogy designed for deep, practical learning. The lead trainer's background includes developing commercial products, guiding startups in GenAI, and helping develop AI curricula for institutions like Wharton University.")
+
+def render_videos():
+    """Renders the video embedding page."""
+    st.markdown("## <span class='gradient-text'>Program Insights & Testimonials</span>", unsafe_allow_html=True)
+    st.write("Hear directly from our team and students about the program's impact.")
+
+    st.subheader("Introduction to Agentic AI")
+    st.video("https://www.youtube.com/watch?v=kflTwjV4I3g") # Placeholder Video
+
+    st.subheader("Student Capstone Project Showcase")
+    st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ") # Placeholder Video
 
 def render_investment():
     """Renders the investment and comparison sections."""
@@ -278,7 +323,6 @@ def render_investment():
     | **Skill Coverage** | **Full stack AI, GenAI, AgenticAI** | Core ML/DS              | ML basics, coding prep      |
     """)
 
-
 def render_advantage():
     """Renders the 'Why Us' and 'Trainer' sections."""
     st.markdown("## Your <span class='gradient-text'>Unfair Advantage</span> in the AI Era", unsafe_allow_html=True)
@@ -289,21 +333,6 @@ def render_advantage():
     cols[1].metric("💰 Outcome-Based", "Refund Guarantee", "Higher CTC")
     cols[2].metric("🔬 Research Alignment", "3 Papers/Patents", "Hackathons")
     cols[3].metric("🚀 Unmatched Depth", "100+ Projects", "60+ Tools")
-
-    st.markdown("---")
-    
-    st.markdown("## Meet Your <span class='gradient-text'>Mentor</span>", unsafe_allow_html=True)
-    
-    cols = st.columns([1, 2])
-    with cols[0]:
-        st.image("https://placehold.co/200x200/1e293b/f97316?text=SA", caption="Sateesh Ambessange, Lead Trainer", use_column_width=True)
-    with cols[1]:
-        st.write("""
-        Learn from a veteran with **25+ years of industry, academic, and research experience**. 
-        He has developed commercial AI products, guided GenAI startups, mentored at hackathons, 
-        and helped shape AI curricula for top institutions like Wharton University.
-        """)
-        st.link_button("View LinkedIn Profile", "https://www.linkedin.com/in/sateesh-ambesange-3020185/")
         
 def render_about_pragyanai():
     """Renders the section about PragyanAI's achievements."""
@@ -396,6 +425,7 @@ def render_faq():
 # --- Main App Execution ---
 def main():
     selected_page = render_sidebar()
+    pdf_b64 = get_pdf_as_base64("MCP Program - Grooms Tommorrow's AI Leaders - TJIT -2 Years.pdf")
     
     if selected_page == "Home":
         render_hero()
@@ -404,7 +434,11 @@ def main():
     elif selected_page == "Program Details":
         render_program_details()
     elif selected_page == "Curriculum":
-        render_curriculum()
+        render_curriculum(pdf_b64)
+    elif selected_page == "Mentor":
+        render_mentor()
+    elif selected_page == "Videos":
+        render_videos()
     elif selected_page == "Investment":
         render_investment()
     elif selected_page == "Our Advantage":
@@ -437,3 +471,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
