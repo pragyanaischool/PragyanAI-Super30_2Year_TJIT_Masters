@@ -280,11 +280,14 @@ def render_videos():
     st.markdown("## <span class='gradient-text'>Program Insights & Testimonials</span>", unsafe_allow_html=True)
     st.write("Hear directly from our team and students about the program's impact.")
 
-    st.subheader("Introduction to Agentic AI")
-    st.video("https://www.youtube.com/watch?v=kflTwjV4I3g") # Placeholder Video
+    st.subheader("About The Program")
+    st.video("https://youtu.be/wp_hejdJzZk")
 
-    st.subheader("Student Capstone Project Showcase")
-    st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ") # Placeholder Video
+    st.subheader("Why You Should Learn AI in Today's World")
+    st.video("https://www.youtube.com/watch?v=kflTwjV4I3g") 
+
+    st.subheader("Sample Student Project Showcase")
+    st.video("https://youtu.be/tiY7-EP3GKs")
 
 def render_investment():
     """Renders the investment and comparison sections."""
