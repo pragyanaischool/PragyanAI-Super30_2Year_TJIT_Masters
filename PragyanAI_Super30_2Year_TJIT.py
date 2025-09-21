@@ -12,7 +12,7 @@ from langchain_groq import ChatGroq
 
 # --- Page Configuration ---
 st.set_page_config(
-    page_title="MCP in AI & Data Science | TJIT + PragyanAI",
+    page_title="PragyanAI - MCP in Data Science,AI & GenAI | TJIT + PragyanAI",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -60,7 +60,7 @@ def setup_rag_pipeline(groq_api_key):
         vectorstore = FAISS.from_documents(documents=splits, embedding=embeddings)
 
         # 5. Setup LLM & Retrieval QA Chain
-        llm = ChatGroq(api_key=groq_api_key, model_name="llama3-8b-8192")
+        llm = ChatGroq(api_key=groq_api_key, model_name="llama-3.3-70b-versatile")
         
         qa_chain = RetrievalQA.from_chain_type(
             llm=llm,
@@ -75,14 +75,18 @@ def setup_rag_pipeline(groq_api_key):
 def render_sidebar():
     """Renders the sidebar navigation and key action links."""
     with st.sidebar:
-        st.markdown(
-            """
-            <div class="sidebar-header">
-                <span class="brand-text">TJIT + <span class="gradient-text">PragyanAI</span></span>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        # Add logo at the top of the sidebar
+        if os.path.exists("logo.png"):
+            st.image("logo.png", use_column_width=True)
+        else:
+            st.markdown(
+                """
+                <div class="sidebar-header">
+                    <span class="brand-text">TJIT + <span class="gradient-text">PragyanAI</span></span>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
         st.header("Navigation")
         
@@ -128,6 +132,16 @@ def render_sidebar():
             📞 [+91-9741007422](tel:+919741007422)
             """
         )
+        
+        # Add LinkedIn link for the mentor
+        st.markdown("---")
+        st.header("Connect with Mentor")
+        st.link_button(
+            "Sateesh Ambessange's LinkedIn", 
+            "https://www.linkedin.com/in/sateesh-ambesange-3020185/",
+            use_container_width=True
+        )
+
         return page
 
 def render_hero():
@@ -423,4 +437,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-	
