@@ -20,10 +20,15 @@ st.set_page_config(
 
 # --- Custom CSS for Styling ---
 def local_css(file_name):
-    with open(file_name) as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    # A style.css file would be needed for this to work.
+    # As it's not provided, this function will raise an error if style.css doesn't exist.
+    # For now, we'll add a check to prevent crashing.
+    if os.path.exists(file_name):
+        with open(file_name) as f:
+            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
-local_css("style.css")
+# Assuming style.css might not exist, we can create a placeholder or skip loading
+# local_css("style.css")
 
 # --- Helper function for PDF download ---
 def get_pdf_as_base64(file_path):
@@ -153,7 +158,7 @@ def render_hero():
         # Center the image
         col1, col2, col3 = st.columns([1,2,1])
         with col2:
-            st.image("PragyanAI_Transperent.png", use_container_width=True)
+            st.image("PragyanAI_Transperent.png", use_column_width=True)
 
     st.markdown(
         """
@@ -218,13 +223,14 @@ def render_curriculum(pdf_b64):
     sem5, sem6, sem7, sem8 = st.tabs(["Semester 5", "Semester 6", "Semester 7", "Semester 8"])
     
     # Common download button logic
-    def download_button(pdf_data):
+    def download_button(pdf_data, key):
         if pdf_data:
             st.download_button(
                 label="Download Full Brochure",
                 data=base64.b64decode(pdf_data),
                 file_name="PragyanAI_MCP_Brochure.pdf",
-                mime="application/pdf"
+                mime="application/pdf",
+                key=key  # FIX: Add unique key here
             )
 
     with sem5:
@@ -234,7 +240,7 @@ def render_curriculum(pdf_b64):
         st.subheader("SKILL 2: Data Science Foundation")
         st.write("Statistics, probability, EDA, and data visualization.")
         st.caption("Tools: Matplotlib, Seaborn, Plotly, Statsmodels")
-        download_button(pdf_b64)
+        download_button(pdf_b64, key="sem5_download")
 
     with sem6:
         st.subheader("SKILL 3: BI / Data Analytics")
@@ -243,7 +249,7 @@ def render_curriculum(pdf_b64):
         st.subheader("SKILL 4: Machine Learning")
         st.write("Supervised/unsupervised learning, model optimization and deployment.")
         st.caption("Tools: Scikit-learn, XGBoost, LightGBM, Streamlit")
-        download_button(pdf_b64)
+        download_button(pdf_b64, key="sem6_download")
 
     with sem7:
         st.subheader("SKILL 5: Deep Learning & CV")
@@ -252,7 +258,7 @@ def render_curriculum(pdf_b64):
         st.subheader("SKILL 6: NLP & AI Bot")
         st.write("Text processing, embeddings, conversational AI, and multimodal bots.")
         st.caption("Tools: Hugging Face, Transformers, NLTK, spaCy")
-        download_button(pdf_b64)
+        download_button(pdf_b64, key="sem7_download")
 
     with sem8:
         st.subheader("SKILL 7: Generative AI")
@@ -261,7 +267,7 @@ def render_curriculum(pdf_b64):
         st.subheader("SKILL 8: Agentic AI")
         st.write("Building single and multi-agent systems for autonomous tasks.")
         st.caption("Tools: CrewAI, AutoGPT, LangChain Agents, AutoGen")
-        download_button(pdf_b64)
+        download_button(pdf_b64, key="sem8_download")
 
 def render_mentor():
     """Renders the dedicated page for the mentor."""
@@ -269,6 +275,7 @@ def render_mentor():
     
     cols = st.columns([1, 2])
     with cols[0]:
+        # Using a placeholder as the original image was not provided
         st.image("https://placehold.co/200x200/1e293b/f97316?text=SA", caption="Sateesh Ambessange, Lead Trainer", use_column_width=True)
     with cols[1]:
         st.write("""
@@ -417,7 +424,7 @@ def render_ai_assistant_and_faq():
     st.markdown("### AI Student Assistant (RAG Enabled)")
     try:
         groq_api_key = st.secrets["GROQ_API_KEY"]
-    except KeyError:
+    except (KeyError, FileNotFoundError):
         st.error("GROQ_API_KEY not found in Streamlit secrets. Please add it to run the AI assistant.")
         st.code(" # .streamlit/secrets.toml \n GROQ_API_KEY = 'YOUR_API_KEY_HERE' ")
         return
