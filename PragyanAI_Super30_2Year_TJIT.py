@@ -2,6 +2,8 @@ import streamlit as st
 import base64
 import os
 import gdown
+import pandas as pd
+import numpy as np
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -83,8 +85,8 @@ def render_sidebar():
     """Renders the sidebar navigation and key action links."""
     with st.sidebar:
         # Add logo at the top of the sidebar
-        if os.path.exists("logo.png"):
-            st.image("logo.png", use_column_width=True)
+        if os.path.exists("PragyanAI_Transperent.png"):
+            st.image("PragyanAI_Transperent.png", use_container_width=True)
         else:
             st.markdown(
                 """
@@ -102,7 +104,7 @@ def render_sidebar():
             "Go to",
             [
                 "Home", "Program Details", "Curriculum", "Mentor", "Videos", "Investment", 
-                "Placement Assurance", "Our Advantage", "About PragyanAI", "AI Assistant & FAQ"
+                "Placement Assurance", "Our Advantage", "About PragyanAI", "AI Assistant & FAQ", "Dashboard"
             ],
             label_visibility="collapsed"
         )
@@ -158,7 +160,7 @@ def render_hero():
         # Center the image
         col1, col2, col3 = st.columns([1,2,1])
         with col2:
-            st.image("PragyanAI_Transperent.png", use_column_width=True)
+            st.image("PragyanAI_Transperent.png", use_container_width=True)
 
     st.markdown(
         """
@@ -476,6 +478,94 @@ def render_ai_assistant_and_faq():
         with st.expander(question):
             st.write(answer)
 
+def render_dashboard():
+    """Renders the analytics dashboard page."""
+    st.markdown("## <span class='gradient-text'>Analytics Dashboard</span>", unsafe_allow_html=True)
+    st.write("Simulated engagement metrics for the program landing page over the last 30 days.")
+
+    try:
+        groq_api_key = st.secrets["GROQ_API_KEY"]
+    except (KeyError, FileNotFoundError):
+        st.error("GROQ_API_KEY not found in Streamlit secrets. Please add it to run the AI features on this page.")
+        st.code(" # .streamlit/secrets.toml \n GROQ_API_KEY = 'YOUR_API_KEY_HERE' ")
+        return
+
+    # --- Simulate Data ---
+    @st.cache_data
+    def get_analytics_data():
+        dates = pd.to_datetime(pd.date_range(end=pd.Timestamp.now(), periods=30, freq='D'))
+        visitors = np.random.randint(150, 400, size=30)
+        visitors[15:] += np.arange(15) * np.random.randint(5,10) # Simulate growth
+        
+        form_fills = (visitors * np.random.uniform(0.05, 0.15, size=30)).astype(int)
+        questions_asked = (visitors * np.random.uniform(0.02, 0.08, size=30)).astype(int)
+        
+        df = pd.DataFrame({
+            'Date': dates,
+            'Page Visits': visitors,
+            'Interest Forms Filled': form_fills,
+            'AI Assistant Questions': questions_asked
+        }).set_index('Date')
+        return df
+
+    df = get_analytics_data()
+
+    # --- Display KPIs ---
+    total_visitors = df['Page Visits'].sum()
+    total_forms = df['Interest Forms Filled'].sum()
+    total_questions = df['AI Assistant Questions'].sum()
+    conversion_rate = (total_forms / total_visitors) * 100 if total_visitors > 0 else 0
+
+    st.markdown("### Key Metrics (Last 30 Days)")
+    kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+    kpi1.metric(label="Total Page Visits", value=f"{total_visitors:,}")
+    kpi2.metric(label="Interest Forms Filled", value=f"{total_forms:,}")
+    kpi3.metric(label="AI Assistant Questions", value=f"{total_questions:,}")
+    kpi4.metric(label="Visitor-to-Form Conversion", value=f"{conversion_rate:.2f}%")
+
+    st.markdown("---")
+
+    # --- Display Charts ---
+    st.markdown("### Engagement Over Time")
+    st.line_chart(df)
+
+    st.markdown("### Weekly Engagement Summary")
+    weekly_df = df.resample('W').sum()
+    st.bar_chart(weekly_df)
+
+    st.markdown("---")
+
+    # --- LLM-Powered Insights ---
+    st.markdown("### AI-Powered Insights")
+    
+    if st.button("Generate AI Analysis"):
+        with st.spinner("🤖 Analyzing data and generating insights..."):
+            try:
+                llm = ChatGroq(api_key=groq_api_key, model_name="llama3-8b-8192")
+                
+                # Create a detailed prompt for the LLM
+                prompt = f"""
+                Analyze the following user engagement data for a course landing page over the last 30 days and provide a summary of insights.
+
+                Data Summary:
+                - Total Page Visits: {total_visitors}
+                - Total Interest Forms Filled: {total_forms}
+                - Total Questions asked to the AI Assistant: {total_questions}
+                - Overall Conversion Rate (Visits to Form Fills): {conversion_rate:.2f}%
+                - Daily Data: {df.to_string()}
+
+                Based on this data, provide a brief, easy-to-understand analysis covering the following points in a markdown format:
+                1.  **Overall Performance:** Give a general assessment of the engagement.
+                2.  **Key Trends:** Identify any notable trends (e.g., growth in visits, changes in conversion).
+                3.  **Actionable Suggestions:** Suggest one or two potential actions to improve engagement or conversions. For example, 'The increase in AI assistant questions suggests users are highly engaged; consider adding more FAQs to the main page'.
+                """
+
+                response = llm.invoke(prompt)
+                st.info(response.content)
+
+            except Exception as e:
+                st.error(f"An error occurred while generating insights: {e}")
+
 
 # --- Main App Execution ---
 def main():
@@ -523,6 +613,8 @@ def main():
         render_about_pragyanai()
     elif selected_page == "AI Assistant & FAQ":
         render_ai_assistant_and_faq()
+    elif selected_page == "Dashboard":
+        render_dashboard()
 
 if __name__ == "__main__":
     main()
